@@ -10,9 +10,8 @@ fun main() {
 object Day05 {
 
     infix fun partOne(input: List<String>): String {
-        val index = input.indexOfFirst { it.isBlank() }
-        val stacks = parseStacks(input, index)
-        val commands = parseCommands(input, index)
+        val stacks = input.stacks
+        val commands = input.commands
 
         commands.forEach { command ->
             repeat(command.numberOfMoves) {
@@ -25,9 +24,9 @@ object Day05 {
     }
 
     infix fun partTwo(input: List<String>): String {
-        val index = input.indexOfFirst { it.isBlank() }
-        val stacks = parseStacks(input, index)
-        val commands = parseCommands(input, index)
+        val stacks = input.stacks
+        val commands = input.commands
+
 
         commands.forEach { command ->
             val temp = (0 until command.numberOfMoves).map { stacks[command.from]!!.removeLast() }.reversed()
@@ -38,29 +37,28 @@ object Day05 {
     }
 }
 
-val regex = """move (\d+) from (\d+) to (\d+)""".toRegex()
+private val List<String>.separatorIndex get() = this.indexOfFirst { it.isBlank() }
 
-private fun parseCommands(input: List<String>, index: Int) = input.subList(index + 1, input.size)
-    .map {
-        val (value, from, to) = regex.find(it)!!.destructured
-        Command(value.toInt(), from.toInt(), to.toInt())
-    }
+private val regex = """move (\d+) from (\d+) to (\d+)""".toRegex()
+private val List<String>.commands
+    get() = this.subList(this.separatorIndex + 1, this.size)
+        .map {
+            val (value, from, to) = regex.find(it)!!.destructured
+            Command(value.toInt(), from.toInt(), to.toInt())
+        }
 
-private fun parseStacks(
-    input: List<String>,
-    index: Int
-) = input.subList(0, index)
-    .reversed()
-    .foldIndexed(mapOf<Int, ArrayDeque<String>>()) { index, acc, s ->
-        when (index) {
-            0 -> s.split(" ").filter { it.isNotBlank() }.associate { it.trim().toInt() to ArrayDeque() }
-            else -> {
-                s.windowed(4, 4, true).forEachIndexed { index, crate ->
-                    if (crate.trim().isNotBlank()) acc[index + 1]!!.addLast(crate.trim().removePrefix("[").removeSuffix("]"))
-                }
-                acc
+private val List<String>.stacks get() = this.subList(0, this.separatorIndex).reversed().asStacks()
+
+private fun String.initStacks(): Map<Int, ArrayDeque<String>> = this.split(" ").filter { it.isNotBlank() }.associate { it.trim().toInt() to ArrayDeque() }
+private fun List<String>.asStacks() =
+    this
+        .drop(1)
+        .fold(this.first().initStacks()) { acc, s ->
+            acc.apply {
+                s.windowed(4, 4, true)
+                    .map { crate -> crate.trim().removePrefix("[").removeSuffix("]") }
+                    .forEachIndexed { index, crate -> if (crate.trim().isNotBlank()) this[index + 1]!!.addLast(crate) }
             }
         }
-    }
 
 data class Command(val numberOfMoves: Int, val from: Int, val to: Int)
