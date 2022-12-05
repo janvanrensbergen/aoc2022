@@ -9,32 +9,23 @@ fun main() {
 
 object Day05 {
 
-    infix fun partOne(input: List<String>): String {
-        val stacks = input.stacks
-        val commands = input.commands
-
-        commands.forEach { command ->
-            repeat(command.numberOfMoves) {
-                stacks[command.to]!!.addLast(stacks[command.from]!!.removeLast())
+    infix fun partOne(input: List<String>): String =
+        input.stacks.apply {
+            input.commands.forEach { command ->
+                repeat(command.numberOfMoves) {
+                    this[command.to]!!.addLast(this[command.from]!!.removeLast())
+                }
             }
-        }
+        }.values.joinToString(separator = "") { it.last() }
 
 
-        return stacks.values.joinToString(separator = "") { it.last() }
-    }
+    infix fun partTwo(input: List<String>): String =
+        input.stacks.apply {
+            input.commands.forEach { command ->
+                this[command.to]!!.addAll((0 until command.numberOfMoves).map { this[command.from]!!.removeLast() }.reversed())
+            }
+        }.values.joinToString(separator = "") { it.last() }
 
-    infix fun partTwo(input: List<String>): String {
-        val stacks = input.stacks
-        val commands = input.commands
-
-
-        commands.forEach { command ->
-            val temp = (0 until command.numberOfMoves).map { stacks[command.from]!!.removeLast() }.reversed()
-            stacks[command.to]!!.addAll(temp)
-        }
-
-        return stacks.values.joinToString(separator = "") { it.last() }
-    }
 }
 
 private val List<String>.separatorIndex get() = this.indexOfFirst { it.isBlank() }
@@ -48,7 +39,6 @@ private val List<String>.commands
         }
 
 private val List<String>.stacks get() = this.subList(0, this.separatorIndex).reversed().asStacks()
-
 private fun String.initStacks(): Map<Int, ArrayDeque<String>> = this.split(" ").filter { it.isNotBlank() }.associate { it.trim().toInt() to ArrayDeque() }
 private fun List<String>.asStacks() =
     this
