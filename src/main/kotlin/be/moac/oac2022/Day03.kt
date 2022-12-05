@@ -18,12 +18,7 @@ object Day03 {
 
     infix fun partTwo(input: List<String>): Int =
         input.windowed(3, 3)
-            .flatMap {
-                it.zipWithNext()
-                    .map { (first, second) -> first.toSet() to second.toSet() }
-                    .flatMap { (first, second) -> first.intersect(second) }
-
-            }
+            .flatMap { it.fold(it.first().toSet()) { acc, s -> acc.intersect(s.toSet()) } }
             .sumOf { it.myCode }
 
 }
