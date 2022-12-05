@@ -11,14 +11,13 @@ object Day03 {
 
     infix fun partOne(input: List<String>): Int =
         input.flatMap {
-            val chunked = it.chunked(it.length / 2)
-            chunked.first().toSet().intersect(chunked.last().toSet())
-        }
-            .sumOf { it.myCode }
+            val (left, right) = it.chunked(it.length / 2).map { group -> group.toSet() }
+            left.intersect(right.toSet())
+        }.sumOf { it.myCode }
 
     infix fun partTwo(input: List<String>): Int =
         input.windowed(3, 3)
-            .flatMap { it.fold(it.first().toSet()) { acc, s -> acc.intersect(s.toSet()) } }
+            .flatMap { it.drop(1).fold(it.first().toSet()) { acc, s -> acc.intersect(s.toSet()) } }
             .sumOf { it.myCode }
 
 }
