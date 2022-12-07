@@ -1,6 +1,6 @@
-package be.moac.oac2022
+package be.moac.aoc2022
 
-import be.moac.oac2022.Result.*
+import be.moac.aoc2022.Result.*
 import kotlin.Int
 import kotlin.Pair
 import kotlin.String

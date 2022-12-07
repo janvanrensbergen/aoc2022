@@ -1,4 +1,4 @@
-package be.moac.oac2022
+package be.moac.aoc2022
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

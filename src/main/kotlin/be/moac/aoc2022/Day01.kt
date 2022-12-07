@@ -1,4 +1,4 @@
-package be.moac.oac2022
+package be.moac.aoc2022
 
 fun main() {
     val input: List<String> = "/day01_input.txt".readLines { it }

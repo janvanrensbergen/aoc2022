@@ -1,10 +1,6 @@
-package be.moac.oac2022
+package be.moac.aoc2022
 
 import java.io.File
-import java.util.ArrayDeque
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.*
-import kotlin.system.measureTimeMillis
 import kotlin.time.*
 import kotlin.time.DurationUnit.MILLISECONDS
 
