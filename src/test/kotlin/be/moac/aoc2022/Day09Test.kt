@@ -16,9 +16,26 @@ class Day09Test {
            R 2
        """.trimIndent().lines()
 
+    private val otherInput = """
+        R 5
+        U 8
+        L 8
+        D 3
+        R 17
+        D 10
+        L 25
+        U 20
+    """.trimIndent().lines()
+
     @Test
     fun `count positions tail visited at least once`() {
         assertThat(Day09 partOne input).isEqualTo(13)
+    }
+
+    @Test
+    fun `count positions last knot of tail visited at least once`() {
+        assertThat(Day09 partTwo input).isEqualTo(1)
+//        assertThat(Day09 partTwo otherInput).isEqualTo(36)
     }
 
     @Test
@@ -64,17 +81,7 @@ class Day09Test {
 
             softly.assertThat((Position(-1, -2) moveCloserTo Position(0,0)).first).`as`("diagonal").isEqualTo(Position(0,-1 ))
             softly.assertThat((Position(-2, -1) moveCloserTo Position(0,0)).first).`as`("diagonal 2").isEqualTo(Position(-1,0 ))
-        }
-    }
-
-    @Test
-    fun `move to same column or row`() {
-        SoftAssertions.assertSoftly { softly ->
-            softly.assertThat(Position(-1, -1) moveToSameColumnOrRow  Position(0,0)).`as`("column row 1").isEqualTo(Position(-1,-1 ))
-            softly.assertThat(Position(-5, -1) moveToSameColumnOrRow  Position(0,0)).`as`("column row 2").isEqualTo(Position(-5,0 ))
-            softly.assertThat(Position(5, -1) moveToSameColumnOrRow  Position(0,0)).`as`("column row 3").isEqualTo(Position(5,0 ))
-            softly.assertThat(Position(-1, -5) moveToSameColumnOrRow  Position(0,0)).`as`("column row 4").isEqualTo(Position(0,-5 ))
-            softly.assertThat(Position(-1, 5) moveToSameColumnOrRow  Position(0,0)).`as`("column row 5").isEqualTo(Position(0,5 ))
+            softly.assertThat((Position(-1, -1) moveCloserTo Position(0,0)).first).`as`("diagonal 3").isEqualTo(Position(-1,-1 ))
         }
     }
 
