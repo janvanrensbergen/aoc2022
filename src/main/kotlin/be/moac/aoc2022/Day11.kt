@@ -34,7 +34,8 @@ object Day11 {
 
         tailrec fun game(counter: Int, monkeys: Monkeys): Monkeys =
             when(counter) {
-                21 -> monkeys
+//                21 -> monkeys [Part 1]
+                10_001 -> monkeys // [Part 2]
                 else -> {
                     println("==== round $counter ====")
                     game(counter +1, playRound(monkeys, monkeys.keys.toList()).print())
@@ -52,7 +53,7 @@ object Day11 {
         return result.first().numberOfItemsInspected * result.last().numberOfItemsInspected
     }
 
-    infix fun partTwo(input: List<String>): Long = 1
+    infix fun partTwo(input: List<String>): Long = partOne(input)
 }
 
 private typealias Monkeys = Map<String, Monkey>
@@ -81,10 +82,11 @@ private data class Monkey(
 
 private data class Outcome(val monkey: Monkey, val actions: List<Action>)
 
-private data class Item(val worryLevel: Int) {
+private data class Item(val worryLevel: Long) {
     operator fun plus(item: Item) = Item(worryLevel = this.worryLevel + item.worryLevel)
     operator fun times(item: Item) = Item(worryLevel = this.worryLevel * item.worryLevel)
-    operator fun div(value: Int) = Item(worryLevel = this.worryLevel / value)
+    operator fun div(value: Long) = Item(worryLevel = this.worryLevel / value)
+    operator fun rem(value: Long) = Item(worryLevel = this.worryLevel % value)
 }
 
 private data class Action(val item: Item, val toMonkey: String)
@@ -98,10 +100,10 @@ private fun List<String>.asMonkey(): Monkey =
     )
 
 private fun String.asItems() =
-    this.trim().removePrefix("Starting items: ").trim().split(",").map { Item(it.trim().toInt()) }
+    this.trim().removePrefix("Starting items: ").trim().split(",").map { Item(it.trim().toLong()) }
 
 private fun String.asOperation(): (Item) -> Item {
-    fun String.asItem(old: Item) = if (this == "old") old else Item(this.toInt())
+    fun String.asItem(old: Item) = if (this == "old") old else Item(this.toLong())
     val (left, operator, right) = this.trim().removePrefix("Operation: new = ").trim().split(" ")
 
     val operation: (Item) -> Item =
@@ -111,11 +113,12 @@ private fun String.asOperation(): (Item) -> Item {
             else -> { item -> item }
         }
 
-    return { item -> operation(item) / 3 }
+//    return { item -> operation(item) / 3 }  [part 1]
+    return { item -> operation(item).rem(9_699_690) } // [part 2] (modulo of all test numbers multiplied)
 }
 
 private fun List<String>.asTest(): (Item) -> Action {
-    val test = { item: Item -> item.worryLevel.rem(this[0].trim().removePrefix("Test: divisible by ").trim().toInt()) == 0 }
+    val test = { item: Item -> item.worryLevel.rem(this[0].trim().removePrefix("Test: divisible by ").trim().toLong()) == 0L }
     return { item ->
         when (test(item)) {
             true -> Action(item, this[1].trim().removePrefix("If true: throw to ").trim())
