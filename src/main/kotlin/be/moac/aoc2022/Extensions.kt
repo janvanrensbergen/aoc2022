@@ -45,3 +45,5 @@ private data class Timed<T>(val min: Duration, val max: Duration, val total: Arr
     }
 }
 
+fun <T> T.print(map: T.() -> String = { this.toString() } ): T = this.also { println(this.map()) }
+
