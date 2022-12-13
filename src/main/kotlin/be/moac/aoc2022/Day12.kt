@@ -1,7 +1,5 @@
 package be.moac.aoc2022
 
-import java.util.PriorityQueue
-
 
 fun main() {
     val input: List<String> = "/day12_input.txt".readLines { it }
@@ -15,22 +13,29 @@ object Day12 {
     infix fun partOne(input: List<String>): Long {
         val heightMap = input.parse()
 
-        fun path(current: Point,
-                 visited: Set<Coord> = emptySet(),
-                 steps: Map<Coord, Int> = emptyMap(),
-                 queue: PriorityQueue<Pair<Coord, Int>>
-        ): Int {
-            return when {
-                queue.isEmpty() -> steps[heightMap.finish.coord] ?: 0
-                else -> {
-                    val (coord, step) = queue.remove()
+        fun path(
+            queue: ArrayDeque<Point>,
+            visited: Set<Coord> = emptySet(),
+            steps: Map<Coord, Int> = emptyMap(),
+        ): Int = when {
+            queue.isEmpty() -> steps[heightMap.finish.coord] ?: 0
+            else -> {
+                val newSteps = steps.toMutableMap()
+                val current = queue.removeFirst()
+                val newStep = steps.getOrDefault(current.coord, Int.MAX_VALUE) + 1
+                heightMap.neighboursOf(current)
+                    .filterNot { visited.contains(it.coord) }
+                    .filter { neighbour -> newStep < steps.getOrDefault(neighbour.coord, Int.MAX_VALUE) }
+                    .forEach { neighbour ->
+                        newSteps[neighbour.coord] = newStep
+                        queue.addLast(neighbour)
+                    }
 
-                    path(queue = queue, visited = visited + coord, steps = steps, current = current)
-                }
+                path(queue = queue, visited = visited + current.coord, steps = newSteps)
             }
         }
 
-        return path(heightMap.start, heightMap.finish).toLong()
+        return path(queue = ArrayDeque(listOf(heightMap.start)), steps = mapOf(heightMap.start.coord to 0)).toLong()
     }
 
     infix fun partTwo(input: List<String>): Long = partOne(input)
