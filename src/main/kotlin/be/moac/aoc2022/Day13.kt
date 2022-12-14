@@ -15,14 +15,23 @@ object Day13 {
     infix fun partOne(input: List<String>): Long {
        return input.windowed(3, 3, true)
            .asSequence()
-            .mapIndexed { index, it -> index + 1 to it[0].parseData().compareRightOrder(it[1].parseData()) }
-            .onEach { println("${it.first}: ${it.second}") }
+            .mapIndexed { index, it -> index + 1 to (it[0].parseData() < it[1].parseData()) }
             .filter { (_, result) -> result }
             .sumOf { it.first }
             .toLong()
     }
 
-    infix fun partTwo(input: List<String>): Long = TODO()
+    infix fun partTwo(input: List<String>): Long {
+        val sorted = (input + "[[2]]" + "[[6]]")
+            .filterNot { it.isBlank() }
+            .map { it.parseData() }
+            .sorted()
+            .onEach { it ->it.print() }
+
+        val firstDecoderKey = sorted.indexOf("[[2]]".parseData()) + 1
+        val secondDecoderKey = sorted.indexOf("[[6]]".parseData()) + 1
+        return firstDecoderKey.times(secondDecoderKey).toLong()
+    }
 
 }
 
@@ -86,30 +95,36 @@ fun PacketData<*>.print(): PacketData<*> {
 }
 
 
-sealed interface PacketData<T> {
-    fun compareRightOrder(other: PacketData<*>): Boolean {
-        fun compare(left: PacketData<*>, right: PacketData<*> ): Boolean? {
-            val fold = left.data.foldIndexed(null as Boolean?) { index, result, next ->
+sealed interface PacketData<T> : Comparable<PacketData<*>>{
+
+    override operator fun compareTo(other: PacketData<*>): Int {
+        fun compare(left: PacketData<*>, right: PacketData<*> ): Int {
+            val fold = left.data.foldIndexed(0) { index, result, next ->
                 val otherNext = right.data.getOrNull(index)
                 when {
-                    result != null -> result
-                    otherNext == null -> false
-                    next is IntData && otherNext is IntData && next == otherNext -> null
-                    next is IntData && otherNext is IntData -> next < otherNext
+                    result != 0 -> result
+                    otherNext == null -> 1
+                    next is IntData && otherNext is IntData -> next.compareTo(otherNext)
                     next is Nested && otherNext is Nested -> compare(next, otherNext)
                     next is IntData && otherNext is Nested -> compare(Nested(listOf(next)), otherNext)
                     next is Nested && otherNext is IntData -> compare(next, Nested(listOf(otherNext)))
-                    else -> null
+                    else -> 0
                 }
             }
-            return fold ?: if (left.data.size == right.data.size) null else left.data.size < right.data.size
+            return if(fold != 0) fold else if (left.data.size == right.data.size) 0 else left.data.size.compareTo(right.data.size)
         }
-        return compare(this, other) ?: (this.data.size < other.data.size)
+        val result = compare(this, other)
+        return if(result != 0) result else this.data.size.compareTo(other.data.size)
     }
 
     val data: List<T>
 
-    data class Nested(override val data: List<PacketData<*>>) : PacketData<PacketData<*>>
+    data class Nested(override val data: List<PacketData<*>>) : PacketData<PacketData<*>> {
+        override fun compareTo(other: PacketData<*>): Int {
+            return super.compareTo(other)
+        }
+    }
+
     data class IntData(val value: Int) : PacketData<Int> {
         override val data: List<Int>
             get() = listOf(value)
