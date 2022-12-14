@@ -62,4 +62,18 @@ class Day13Test {
         }
 
     }
+
+    @Test
+    fun name() {
+        val queue = ArrayDeque<List<Int>>()
+        queue.addLast(emptyList())
+        queue.last().toMutableList().apply { add(1) }
+        queue.last().toMutableList().apply { add(2) }
+        queue.addLast(emptyList())
+        queue.last().toMutableList().apply { add(10) }
+        queue.last().toMutableList().apply { add(20) }
+        queue.last().toMutableList().apply { add(30) }
+        
+    }
+
 }

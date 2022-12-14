@@ -17,16 +17,50 @@ object Day13 {
 
 private val regex = "\\[(.+)\\]".toRegex()
 
-fun String.parseData(): PacketData<*> =
-    when {
-        regex.matches(this) -> PacketData.Nested(listOf(regex.find(this)!!.groupValues[1].parseData()))
-        this.contains("],[") -> PacketData.Nested(this.split("],[").map { """[${it.removePrefix("[").removeSuffix("]")}]""".parseData() })
-        else ->  when {
-            this.isBlank() || this == "[]"-> PacketData.IntData(emptyList())
-            this.contains(",") -> PacketData.IntData(this.split(",").map { it.trim().toInt() })
-            else -> PacketData.IntData(listOf(this.trim().toInt()))
+fun String.parseData(): PacketData<*> {
+    val queue = this.fold(ArrayDeque<PacketData<*>>() to "") { (queue, current), char ->
+        when(char) {
+            '[' -> {
+                queue.addLast(PacketData.Nested(emptyList()))
+                queue to ""
+            }
+            ',' -> {
+                if(current.isNotBlank()){
+                    when(val last = queue.removeLast()) {
+                        is PacketData.IntData -> queue.addLast(last.copy(data = last.data + current.toInt()))
+                        is PacketData.Nested -> queue.addLast(last.copy(data = last.data + PacketData.IntData(listOf(current.toInt()))))
+                    }
+                }
+                queue to ""
+            }
+            ']' -> {
+                if(current.isNotBlank()){
+                    when(val last = queue.removeLast()) {
+                        is PacketData.IntData -> queue.addLast(last.copy(data = last.data + current.toInt()))
+                        is PacketData.Nested -> queue.addLast(last.copy(data = last.data + PacketData.IntData(listOf(current.toInt()))))
+                    }
+                }
+
+                val last = queue.removeLast()
+                when {
+                    queue.isEmpty() -> queue.addLast(last)
+                    else -> {
+                        val last = queue.removeLast()
+                        when(last) {
+                            is PacketData.IntData -> TODO()
+                            is PacketData.Nested -> TODO()
+                        }
+                        queue.last().data.toMutableList().apply { add(last) }
+                    }
+                }
+                queue to ""
+            }
+            else -> queue to "$current$char"
         }
     }
+    return queue.first.first()
+}
+
 
 
 
