@@ -2,6 +2,7 @@ package be.moac.aoc2022
 
 import be.moac.aoc2022.PacketData.IntData
 import be.moac.aoc2022.PacketData.Nested
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.Test
 
@@ -30,50 +31,127 @@ class Day13Test {
 
         [1,[2,[3,[4,[5,6,7]]]],8,9]
         [1,[2,[3,[4,[5,6,0]]]],8,9]
-    """.trimIndent()
+    """.trimIndent().lines()
 
-    fun print(data: PacketData<*>): String {
-        return when (data) {
-            is IntData -> data.data.joinToString(prefix = "", separator = ", ", postfix = "") { "$it" }
-            is Nested -> data.data.joinToString(prefix = "[", separator = ", ", postfix = "]") { "${print(it)}" }
+    @Test
+    fun `part one`() {
+        assertThat(Day13 partOne input).isEqualTo(13)
+    }
+
+    @Test
+    fun `compare data`() {
+        assertSoftly { softly ->
+            softly.assertThat("[9]".parseData().compareRightOrder("[[8,10,6]]".parseData())).`as`("7_a").isFalse
+            softly.assertThat("[1,1,3,1,1]".parseData().compareRightOrder("[1,1,5,1,1]".parseData())).`as`("1").isTrue
+            softly.assertThat("[1,1,6,1,1]".parseData().compareRightOrder("[1,1,5,1,1]".parseData())).`as`("2").isFalse
+            softly.assertThat("[1,1,6,1,1]".parseData().compareRightOrder("[1,1,5,2,2]".parseData())).`as`("2_a").isFalse
+            softly.assertThat("[[1]]".parseData().compareRightOrder("[[2]]".parseData())).`as`("3").isTrue
+            softly.assertThat("[[2]]".parseData().compareRightOrder("[[1]]".parseData())).`as`("4").isFalse
+            softly.assertThat("[1]".parseData().compareRightOrder("[[2]]".parseData())).`as`("5").isTrue
+            softly.assertThat("[2]".parseData().compareRightOrder("[[1]]".parseData())).`as`("6").isFalse
+            softly.assertThat("[9]".parseData().compareRightOrder("[[8,7,6]]".parseData())).`as`("7").isFalse
+            softly.assertThat("[[4,4],4,4]".parseData().compareRightOrder("[[4,4],4,4,4]".parseData())).`as`("8").isTrue
+            softly.assertThat("[7,7,7,7]".parseData().compareRightOrder("[7,7,7]".parseData())).`as`("9").isFalse
+            softly.assertThat("[]".parseData().compareRightOrder("[3]".parseData())).`as`("10").isTrue
+            softly.assertThat("[[3]]".parseData().compareRightOrder("[]".parseData())).`as`("10_a").isFalse
+            softly.assertThat("[[[]]]".parseData().compareRightOrder("[[]]".parseData())).`as`("10_b").isFalse
+            softly.assertThat("[[]]".parseData().compareRightOrder("[[[]]]".parseData())).`as`("10_c").isTrue
+            softly.assertThat("[1,[2,[3,[4,[5,6,7]]]],8,9]".parseData().compareRightOrder("[1,[2,[3,[4,[5,6,0]]]],8,9]".parseData())).`as`("10_d").isFalse
+            softly.assertThat("[[4,4],4]".parseData().compareRightOrder("[[4,4],5]".parseData())).`as`("11").isTrue
+            softly.assertThat("[[4,4],4]".parseData().compareRightOrder("[[4,4],3]".parseData())).`as`("12").isFalse
+            softly.assertThat("[[4,4,4],4]".parseData().compareRightOrder("[[4,4],4]".parseData())).`as`("13").isFalse
+            softly.assertThat("[[4,4],4]".parseData().compareRightOrder("[[4,4,4],4]".parseData())).`as`("14").isTrue
+            softly.assertThat("[[1],[2,3,4]]".parseData().compareRightOrder("[[1],4]".parseData())).`as`("15").isTrue
+
+            softly.assertThat("[[[1]]]".parseData().compareRightOrder("[4]".parseData())).`as`("16").isTrue
+            softly.assertThat("[[[1]]]".parseData().compareRightOrder("[[4]]".parseData())).`as`("17").isTrue
+            softly.assertThat("[[[1]]]".parseData().compareRightOrder("[[[4]]]".parseData())).`as`("18").isTrue
+
         }
+    }
+
+    @Test
+    fun `other compare test`() {
+        val left =
+            """[
+                [
+                   [ [],[7,10,6,5],[],[8]
+                 ],0,1,[[8,10]],4
+                ],[[[4,0,3,2,0]],7],[[],3,[[0,2],8,5],[],[[2,10,4,6]]],[3],[5,[1,[8,0],10,1,[4,3,9,9]],1]]""".trimMargin().parseData().print()
+        val right = "[[0,2,7],[],[10,[[0,7,3,6]]],[2,[8],3]]".parseData().print()
+        assertThat(left.compareRightOrder(right)).`as`("16").isTrue
     }
 
     @Test
     fun `that string can be parsed`() {
         assertSoftly { softly ->
-
-//            softly.assertThat("[1,1,3,1,1]".parseData()).isEqualTo(Nested(listOf(IntData(listOf(1, 1, 3, 1, 1)))))
-//            softly.assertThat("[1]".parseData()).isEqualTo(Nested(listOf(IntData(listOf(1)))))
-//            softly.assertThat("[[1]]".parseData()).isEqualTo(Nested(listOf(Nested(listOf(IntData(listOf(1)))))))
-//            softly.assertThat("[]".parseData()).isEqualTo(IntData(listOf()))
-
-            val parseData = "[[1,2],[3,4]]".parseData()
-            println(print(parseData))
-            softly.assertThat(parseData).isEqualTo(
+            softly.assertThat("[1,1,3,1,1]".parseData()).isEqualTo(
                 Nested(
                     listOf(
-                        Nested(listOf(IntData(listOf(1,2)))),
-                        Nested(listOf(IntData(listOf(3,4))))
+                        IntData(1),
+                        IntData(1),
+                        IntData(3),
+                        IntData(1),
+                        IntData(1),
+                    )
+                )
+            )
+            softly.assertThat("[1]".parseData()).isEqualTo(Nested(listOf(IntData(1))))
+            softly.assertThat("[[1]]".parseData()).isEqualTo(Nested(listOf(Nested(listOf(IntData(1))))))
+            softly.assertThat("[]".parseData()).isEqualTo(Nested(listOf()))
+
+            softly.assertThat("[[1,2],[3,4]]".parseData()).isEqualTo(
+                Nested(
+                    listOf(
+                        Nested(listOf(IntData(1), IntData(2))),
+                        Nested(listOf(IntData(3), IntData(4)))
                     )
                 )
             )
 
+            softly.assertThat("[[1],4]".parseData()).isEqualTo(
+                Nested(
+                    listOf(
+                        Nested(listOf(IntData(1))),
+                        IntData(4)
+                    )
+                )
+            )
+            softly.assertThat("[1,[2,[3,[4,[5,6,7]]]],8,9,100]".parseData()).isEqualTo(
+                Nested(
+                    listOf(
+                        IntData(1),
+                        Nested(
+                            listOf(
+                                IntData(2),
+                                Nested(
+                                    listOf(
+                                        IntData(3),
+                                        Nested(
+                                            listOf(
+                                                IntData(4),
+                                                Nested(
+                                                    listOf(
+                                                        IntData(5),
+                                                        IntData(6),
+                                                        IntData(7),
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        IntData(8),
+                        IntData(9),
+                        IntData(100),
+                    )
+                )
+            )
         }
 
     }
 
-    @Test
-    fun name() {
-        val queue = ArrayDeque<List<Int>>()
-        queue.addLast(emptyList())
-        queue.last().toMutableList().apply { add(1) }
-        queue.last().toMutableList().apply { add(2) }
-        queue.addLast(emptyList())
-        queue.last().toMutableList().apply { add(10) }
-        queue.last().toMutableList().apply { add(20) }
-        queue.last().toMutableList().apply { add(30) }
-        
-    }
 
 }
