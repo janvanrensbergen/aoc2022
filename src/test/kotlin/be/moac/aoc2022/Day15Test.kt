@@ -1,7 +1,11 @@
 package be.moac.aoc2022
 
-import org.assertj.core.api.Assertions
+import be.moac.aoc2022.Day15.Beacon
+import be.moac.aoc2022.Day15.Signal
+import be.moac.aoc2022.Day15.Point
+import be.moac.aoc2022.Day15.Sensor
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.Test
 
 class Day15Test {
@@ -26,5 +30,25 @@ class Day15Test {
     @Test
     fun `part one`() {
         assertThat(Day15.partOne(input, 10L)).isEqualTo(26)
+    }
+
+    @Test
+    fun `part two`() {
+        assertThat(Day15.partTwo(input, 0, 20L)).isEqualTo(56000011)
+    }
+
+
+    @Test
+    fun `find edges`() {
+        val signal = Signal(Sensor(5,5), Beacon(0,5))
+        val edges = signal.edges()
+        assertSoftly { softly ->
+            softly.assertThat(signal.distance).isEqualTo(5)
+            softly.assertThat(edges).contains(Point(-1,5))
+            softly.assertThat(edges).contains(Point(5, -1))
+            softly.assertThat(edges).contains(Point(11,5))
+            softly.assertThat(edges).contains(Point(5,11))
+        }
+
     }
 }
